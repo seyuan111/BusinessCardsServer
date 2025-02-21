@@ -3,9 +3,9 @@ import mongoose from 'mongoose';
 const businessSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    address: { type: String, required: true },
+    address: { type: String },
     email: { type: String, required: true, unique: true },
-    occupation: { type: String, required: true },
+    occupation: { type: String },
     contact: {
       type: String,
       required: true,

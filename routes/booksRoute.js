@@ -8,9 +8,7 @@ router.post('/', async (request, response) => {
   try {
     if (
       !request.body.name ||
-      !request.body.address ||
       !request.body.email ||
-      !request.body.occupation ||
       !request.body.contact
     ) {
       return response.status(400).send({
@@ -84,9 +82,7 @@ router.put('/:id', async (request, response) => {
   try {
     if (
       !request.body.name ||
-      !request.body.address ||
       !request.body.email ||
-      !request.body.occupation ||
       !request.body.contact
     ) {
       return response.status(400).send({
