@@ -3,6 +3,7 @@ import { PORT } from './config.js';
 import mongoose from 'mongoose';
 import businessCardsRoute from './routes/booksRoute.js';
 import userRoutes from './routes/userRoutes.js'
+import cookieParser from 'cookie-parser'
 import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -11,6 +12,7 @@ const app = express();
 
 // Middleware for parsing request body
 app.use(express.json());
+app.use(cookieParser());
 
 // Middleware for handling CORS POLICY
 // Option 1: Allow All Origins with Default of cors(*)
@@ -33,13 +35,13 @@ app.use('/cards', businessCardsRoute);
 app.use('/users', userRoutes);
 
 mongoose
-  .connect(process.env.mongoDBURL)
+  .connect(process.env.mongoDBURL, { dbName: 'cardology' })
   .then(() => {
-    console.log('App connected to database');
+    console.log('Connected to MongoDB')
     app.listen(PORT, () => {
-      console.log(`App is listening to port: ${PORT}`);
+      console.log(`App is listening on port: ${PORT}`);
     });
   })
   .catch((error) => {
-    console.log(error);
+    console.error('MongoDB connection error:', error);
   });
