@@ -35,7 +35,7 @@ app.use('/cards', businessCardsRoute);
 app.use('/users', userRoutes);
 
 mongoose
-  .connect(process.env.mongoDBURL, { dbName: 'cardology' })
+  .connect(process.env.mongoDBURL)
   .then(() => {
     console.log('Connected to MongoDB')
     app.listen(PORT, () => {
