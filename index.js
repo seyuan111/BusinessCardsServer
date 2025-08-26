@@ -18,7 +18,7 @@ app.use(cookieParser());
 // Option 1: Allow All Origins with Default of cors(*)
 app.use(
   cors({
-    origin: 'http://localhost:5173', // Specify the frontend origin
+    origin: ['http://localhost:5173', "https://business-card-frontend.vercel.app"], // Specify the frontend origin
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Include OPTIONS for preflight
     allowedHeaders: ['Content-Type', 'Authorization'], // Allow necessary headers
     credentials: true, // Allow cookies and credentials
