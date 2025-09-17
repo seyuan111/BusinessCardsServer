@@ -62,9 +62,17 @@ export const login = async (req,res) => {
             return res.status(400).json({ success: false, message: "please verify your email"})
         }
 
-        generateJWTToken(res, user._id)
+        const token = generateJWTToken(res, user._id)  // Still set cookie for desktop
 
-        res.status(200).json({ success: true, message: "user logged in successfully"})
+        res.status(200).json({ 
+            success: true, 
+            message: "user logged in successfully",
+            token: token,  // Return token for mobile/cross-origin use
+            user: {
+                ...user._doc,
+                password: undefined
+            }
+        })
     }catch(error){
         res.status(400).json({ success: false, message: error.message})
     }
