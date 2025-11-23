@@ -42,6 +42,13 @@ const businessSchema = new mongoose.Schema(
       unique: true,
     },
 
+    fax: {
+      type: String,
+      match: /^\(\d{3}\) \d{3}-\d{4}$/, // (xxx) xxx-xxxx
+      unique: true,
+      sparse: true, // allow multiple docs without fax
+    },
+
     website: {
       type: String,
       default: '',

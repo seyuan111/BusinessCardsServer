@@ -12,7 +12,7 @@ const normalizeWebsite = (value = '') => {
 // Route for Save a new Card
 router.post('/', async (request, response) => {
   try {
-    const { name, address, email, occupation, contact, website } = request.body;
+    const { name, address, email, occupation, contact, fax, website } = request.body;
 
     if (!name || !email || !contact) {
       return response.status(400).send({
@@ -34,12 +34,22 @@ router.post('/', async (request, response) => {
       });
     }
 
+    if (fax) {
+      const existingFax = await Business.findOne({ fax });
+      if (existingFax) {
+        return response.status(400).send({
+          message: 'Fax number is already taken.',
+        });
+      }
+    }
+
     const newCard = {
       name,
       address,
       email,
       occupation,
       contact,
+      fax,
       website: normalizeWebsite(website),
     };
 
@@ -87,7 +97,7 @@ router.get('/:id', async (request, response) => {
 // Route for Update a card
 router.put('/:id', async (request, response) => {
   try {
-    const { name, address, email, occupation, contact, website } = request.body;
+    const { name, address, email, occupation, contact, fax, website } = request.body;
 
     if (!name || !email || !contact) {
       return response.status(400).send({
@@ -103,6 +113,7 @@ router.put('/:id', async (request, response) => {
       email,
       occupation,
       contact,
+      fax,
       website: normalizeWebsite(website),
     };
 
