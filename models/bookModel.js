@@ -21,6 +21,8 @@ const normalizeWebsite = (value = '') => {
 
 const businessSchema = new mongoose.Schema(
   {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+
     name: { type: String, required: true },
 
     address: {
@@ -31,7 +33,7 @@ const businessSchema = new mongoose.Schema(
       },
     },
 
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true },
 
     occupation: { type: String },
 
@@ -39,14 +41,11 @@ const businessSchema = new mongoose.Schema(
       type: String,
       required: true,
       match: /^\(\d{3}\) \d{3}-\d{4}$/, // (xxx) xxx-xxxx
-      unique: true,
     },
 
     fax: {
       type: String,
       match: /^\(\d{3}\) \d{3}-\d{4}$/, // (xxx) xxx-xxxx
-      unique: true,
-      sparse: true, // allow multiple docs without fax
     },
 
     website: {
@@ -63,6 +62,17 @@ const businessSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
+);
+
+// Ensure contact details are unique per user while allowing different users to reuse them
+businessSchema.index({ user: 1, email: 1 }, { unique: true });
+businessSchema.index({ user: 1, contact: 1 }, { unique: true });
+businessSchema.index(
+  { user: 1, fax: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { fax: { $exists: true, $nin: [null, ''] } },
+  }
 );
 
 export const Business = mongoose.model('Business', businessSchema);

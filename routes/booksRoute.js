@@ -1,5 +1,6 @@
 import express from 'express';
 import { Business } from '../models/bookModel.js';
+import { verifyToken } from '../middleware/verifyToken.js';
 
 const router = express.Router();
 
@@ -9,10 +10,13 @@ const normalizeWebsite = (value = '') => {
   return /^https?:\/\//i.test(v) ? v : `https://${v}`;
 };
 
+router.use(verifyToken);
+
 // Route for Save a new Card
 router.post('/', async (request, response) => {
   try {
     const { name, address, email, occupation, contact, fax, website } = request.body;
+    const userId = request.userId;
 
     if (!name || !email || !contact) {
       return response.status(400).send({
@@ -20,14 +24,14 @@ router.post('/', async (request, response) => {
       });
     }
 
-    const existingEmail = await Business.findOne({ email });
+    const existingEmail = await Business.findOne({ email, user: userId });
     if (existingEmail) {
       return response.status(400).send({
         message: 'Email address is already taken.',
       });
     }
 
-    const existingPhone = await Business.findOne({ contact });
+    const existingPhone = await Business.findOne({ contact, user: userId });
     if (existingPhone) {
       return response.status(400).send({
         message: 'Phone number is already taken.',
@@ -35,7 +39,7 @@ router.post('/', async (request, response) => {
     }
 
     if (fax) {
-      const existingFax = await Business.findOne({ fax });
+      const existingFax = await Business.findOne({ fax, user: userId });
       if (existingFax) {
         return response.status(400).send({
           message: 'Fax number is already taken.',
@@ -44,6 +48,7 @@ router.post('/', async (request, response) => {
     }
 
     const newCard = {
+      user: userId,
       name,
       address,
       email,
@@ -70,7 +75,7 @@ router.post('/', async (request, response) => {
 // Route for Get All cards sorted by name
 router.get('/', async (request, response) => {
   try {
-    const cards = await Business.find({}).sort({ name: 1 });
+    const cards = await Business.find({ user: request.userId }).sort({ name: 1 });
 
     return response.status(200).json({
       count: cards.length,
@@ -86,7 +91,12 @@ router.get('/', async (request, response) => {
 router.get('/:id', async (request, response) => {
   try {
     const { id } = request.params;
-    const card = await Business.findById(id);
+    const card = await Business.findOne({ _id: id, user: request.userId });
+
+    if (!card) {
+      return response.status(404).json({ message: 'Contact not found' });
+    }
+
     return response.status(200).json(card);
   } catch (error) {
     console.log(error.message);
@@ -108,6 +118,7 @@ router.put('/:id', async (request, response) => {
     const { id } = request.params;
 
     const updatedPayload = {
+      user: request.userId,
       name,
       address,
       email,
@@ -117,10 +128,14 @@ router.put('/:id', async (request, response) => {
       website: normalizeWebsite(website),
     };
 
-    const result = await Business.findByIdAndUpdate(id, updatedPayload, {
-      new: true,
-      runValidators: true, // IMPORTANT: ensures website/address validators run on update
-    });
+    const result = await Business.findOneAndUpdate(
+      { _id: id, user: request.userId },
+      updatedPayload,
+      {
+        new: true,
+        runValidators: true, // IMPORTANT: ensures website/address validators run on update
+      }
+    );
 
     if (!result) {
       return response.status(404).json({ message: 'Contact not found' });
@@ -143,7 +158,7 @@ router.delete('/:id', async (request, response) => {
   try {
     const { id } = request.params;
 
-    const result = await Business.findByIdAndDelete(id);
+    const result = await Business.findOneAndDelete({ _id: id, user: request.userId });
 
     if (!result) {
       return response.status(404).json({ message: 'Contact not found' });
