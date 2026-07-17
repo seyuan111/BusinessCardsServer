@@ -98,9 +98,18 @@ export const verifyEmail = async(req,res) => {
         user.verificationTokenExpiresAt = undefined
         await user.save()
 
+        const token = generateJWTToken(res, user._id)
         await sendWelcomeEmail(user.email, user.name)
 
-        res.status(200).json({ success: true, message: "email verified successfully"})
+        res.status(200).json({ 
+            success: true, 
+            message: "email verified successfully",
+            token,
+            user: {
+                ...user._doc,
+                password: undefined
+            }
+        })
     }catch(error){
         console.log("error while verifying email", error)
         res.status(400).json({ success: false, message: "there was an error while verifying email"})
